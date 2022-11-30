@@ -4,6 +4,7 @@ let height = "fit-content"
 let lifeTime = 5000
 let padding = 10+'px'
 let notifications = []
+let animationSpeed = 500
 let maxStack = 8
 let stack = [0,0,0,0]
 for (let i = 0; i < maxStack; i++) {
@@ -15,9 +16,10 @@ function spawnMessage(title, message,options) {
     let obj = { el: null, stackPos: maxStack*2, killed: false }
     let popupBody = document.createElement('div')
 
-    popupBody.setAttribute('class','notification '+(notifications.length+1))
-
-    popupBody.style.backgroundColor = "#fff"
+   
+    if(!options)options = {}
+    popupBody.setAttribute('class',options.class??('notification '+(notifications.length+1)))
+    popupBody.style.backgroundColor = options?.bg??"#fff"
     popupBody.style.position = "fixed"
 
     let titleEl = document.createElement('h2')
@@ -28,7 +30,7 @@ function spawnMessage(title, message,options) {
     popupBody.appendChild(titleEl)
     popupBody.appendChild(messageEl)
     popupBody.style.opacity = 0
-    popupBody.style.transition = "all 250ms"
+    popupBody.style.transition = "all "+animationSpeed+"ms"
     popupBody.style.padding = padding
     obj.el = popupBody
     notifications.push(obj)
@@ -45,11 +47,11 @@ function spawnMessage(title, message,options) {
             popupBody.remove()
             stack[obj.stackPos] = 0
             obj.killed = true
-        }, 250);
+        }, animationSpeed);
     }, options?.lifetime ?? lifeTime);
 }
 
-setInterval(() => {
+const thread = setInterval(() => {
     let freeCandidate = 999
 
     notifications.sort((a, b) => a.stackPos - b.stackPos).forEach((each) => {
@@ -71,4 +73,4 @@ setInterval(() => {
         }
         return
     })
-}, 150);
+}, 13);
