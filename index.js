@@ -40,7 +40,7 @@ function spawnMessage(title, message,options) {
         popupBody.style.opacity = 1
     }, 1);
     popupBody.style.left = (window.visualViewport.width - popupBody.offsetWidth) + 'px'
-    popupBody.style.top = (window.visualViewport.height - popupBody.offsetHeight * obj.stackPos) + 'px'
+    popupBody.style.top = -200 + 'px'
     setTimeout(() => {
         popupBody.style.opacity = 0
         setTimeout(() => {
