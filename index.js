@@ -4,20 +4,18 @@ let height = "fit-content"
 let lifeTime = 5000
 let padding = 10+'px'
 let notifications = []
-let stack = [0, 0, 0, 0, 0, 0]
-function spawn(title, message, options) {
-    let obj = { el: null, stackPos: null, killed: false }
+let maxStack = 8
+let stack = [0,0,0,0]
+for (let i = 0; i < maxStack; i++) {
+    stack[i] = 0
+    
+}
+console.log(stack)
+function spawnMessage(title, message,options) {
+    let obj = { el: null, stackPos: maxStack*2, killed: false }
     let popupBody = document.createElement('div')
 
     popupBody.setAttribute('class','notification '+(notifications.length+1))
-
-    for (let i = 1; i <= stack.length; i++) {
-        if (stack[i] == 0) {
-            obj.stackPos = i
-            stack[i] = 1
-            break
-        }
-    }
 
     popupBody.style.backgroundColor = "#fff"
     popupBody.style.position = "fixed"
@@ -50,16 +48,15 @@ function spawn(title, message, options) {
         }, 250);
     }, options?.lifetime ?? lifeTime);
 }
+
 setInterval(() => {
     let freeCandidate = 999
 
     notifications.sort((a, b) => a.stackPos - b.stackPos).forEach((each) => {
         if (!each || each.killed) {
             each = null;
-            console.log('buuuuu')
             return
         }
-        console.log(100)
         for (let i = 1; i <= stack.length; i++) {
             if (stack[i] == 0) {
                 freeCandidate = i
@@ -74,16 +71,4 @@ setInterval(() => {
         }
         return
     })
-    console.log(notifications.sort((a, b) => a.stackPos - b.stackPos))
-
 }, 150);
-
-for (let i = 0; i < 15; i++) {
-    setTimeout(() => {
-        spawn('teste00000' + i, '')
-    }, i * 1500);
-}
-
-setInterval(() => {
-    console.log(stack)
-}, 500);
