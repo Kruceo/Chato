@@ -1,24 +1,65 @@
-
-let width = "fit-content"
-let height = "fit-content"
-let lifeTime = 5000
-let padding = 10+'px'
-let notifications = []
-let animationSpeed = 500
-let maxStack = 8
-let stack = [0,0,0,0]
-for (let i = 0; i < maxStack; i++) {
-    stack[i] = 0
+const width =         "fit-content"
+const height =        "fit-content"
+const lifeTime =      5000             
+const padding =       10+'px'           
+const notifications = []            
+const animationSpeed = 500            
+const maxStack =        8           
+const stack =         [0,0,0,0]       
+const pos = 'right'   
+function createNotificationCore()
+{
+    let core = {
+        pos,
+        width,
+        height,
+        lifeTime,
+        padding,
+        notifications,
+        animationSpeed,
+        maxStack,
+        stack,
+        spawnMessage: (title,message,options)=>spawnMessage(title,message,options,core),
+        thread: null    ,
+    }
+    for (let i = 0; i < core.maxStack; i++) {
+        core.stack[i] = 0
+        
+    }
+    const thread = setInterval(() => {
+        let freeCandidate = 999
     
+        core.notifications.sort((a, b) => a.stackPos - b.stackPos).forEach((each) => {
+            if (!each || each.killed) {
+                each = null;
+                return
+            }
+            for (let i = 1; i <= core.stack.length; i++) {
+                if (core.stack[i] == 0) {
+                    freeCandidate = i
+                    if (each.stackPos > freeCandidate) {
+                        core.stack[each.stackPos] = 0
+                        each.stackPos = freeCandidate
+                        core.stack[freeCandidate] = 1
+                        each.el.style.top = (window.visualViewport.height - each.el.offsetHeight * freeCandidate) + 'px'
+                    }
+                    break
+                }
+            }
+            return
+        })
+    }, 13);
+
+    core.thread = thread
+    return core
 }
-console.log(stack)
-function spawnMessage(title, message,options) {
-    let obj = { el: null, stackPos: maxStack*2, killed: false }
+
+function spawnMessage(title, message,options,core) {
+    let obj = { el: null, stackPos: core.maxStack*2, killed: false }
     let popupBody = document.createElement('div')
 
-   
     if(!options)options = {}
-    popupBody.setAttribute('class',options.class??('notification '+(notifications.length+1)))
+    popupBody.setAttribute('class',options.class??('notification '+(core.notifications.length+1)))
     popupBody.style.backgroundColor = options?.bg??"#fff"
     popupBody.style.position = "fixed"
 
@@ -30,10 +71,10 @@ function spawnMessage(title, message,options) {
     popupBody.appendChild(titleEl)
     popupBody.appendChild(messageEl)
     popupBody.style.opacity = 0
-    popupBody.style.transition = "all "+animationSpeed+"ms"
-    popupBody.style.padding = padding
+    popupBody.style.transition = "all "+core.animationSpeed+"ms"
+    popupBody.style.padding = core.padding
     obj.el = popupBody
-    notifications.push(obj)
+    core.notifications.push(obj)
     document.body.appendChild(popupBody)
 
     setTimeout(() => {
@@ -45,32 +86,9 @@ function spawnMessage(title, message,options) {
         popupBody.style.opacity = 0
         setTimeout(() => {
             popupBody.remove()
-            stack[obj.stackPos] = 0
+            core.stack[obj.stackPos] = 0
             obj.killed = true
         }, animationSpeed);
-    }, options?.lifetime ?? lifeTime);
+    }, options?.lifetime ?? core.lifeTime);
 }
 
-const thread = setInterval(() => {
-    let freeCandidate = 999
-
-    notifications.sort((a, b) => a.stackPos - b.stackPos).forEach((each) => {
-        if (!each || each.killed) {
-            each = null;
-            return
-        }
-        for (let i = 1; i <= stack.length; i++) {
-            if (stack[i] == 0) {
-                freeCandidate = i
-                if (each.stackPos > freeCandidate) {
-                    stack[each.stackPos] = 0
-                    each.stackPos = freeCandidate
-                    stack[freeCandidate] = 1
-                    each.el.style.top = (window.visualViewport.height - each.el.offsetHeight * freeCandidate) + 'px'
-                }
-                break
-            }
-        }
-        return
-    })
-}, 13);
