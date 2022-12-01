@@ -22,6 +22,7 @@ function createNotificationCore()
         maxStack,
         stack:[],
         spawnMessage: (title,message,options)=>spawnMessage(title,message,options,core),
+        spawnElement: (element,options)=>spawnElement(element,options,core),
         thread: null    ,
     }
     for (let i = 0; i <= core.maxStack; i++) {
@@ -63,7 +64,7 @@ function spawnMessage(title, message,options,core) {
 
     if(!options)options = {}
     popupBody.setAttribute('class',options.class??('notification '+(core.notifications.length+1)))
-    popupBody.style.backgroundColor = options?.bg??"#ffffff99"
+    popupBody.style.backgroundColor = options.bg??"#ffffffee"
     popupBody.style.position = "fixed"
 
     let titleEl = document.createElement('h2')
@@ -99,3 +100,39 @@ function spawnMessage(title, message,options,core) {
     }, options?.lifetime ?? core.lifeTime);
 }
 
+function spawnElement(element,options,core) {
+    let obj = { el: null, stackPos: core.maxStack*2, killed: false }
+    let popupBody = document.createElement('div')
+
+    if(!options)options = {}
+    popupBody.setAttribute('class',options.class??('notification '+(core.notifications.length+1)))
+    popupBody.style.backgroundColor = options.bg??"#ffffffee"
+    popupBody.style.position = "fixed"
+
+    let el = element.cloneNode(true)
+    popupBody.appendChild(el)
+    popupBody.style.opacity = 0
+    popupBody.style.transition = "all "+core.animationSpeed+"ms"
+    popupBody.style.padding = core.padding + 'px'
+    obj.el = popupBody
+    core.notifications.push(obj)
+    document.body.appendChild(popupBody)
+
+    setTimeout(() => {
+        popupBody.style.opacity = 1
+    }, 1);
+    if(core.pos == 'right')popupBody.style.left = (window.visualViewport.width - popupBody.offsetWidth) + 'px'
+    if(core.pos == 'left')popupBody.style.left = 0
+    if(typeof(core.pos)=="number")popupBody.style.left = core.pos + 'px'
+    //if(=="number")popupBody.style.left = core.pos + 'px'
+    
+    popupBody.style.top = -200 + 'px'
+    setTimeout(() => {
+        popupBody.style.opacity = 0
+        setTimeout(() => {
+            popupBody.remove()
+            core.stack[obj.stackPos] = 0
+            obj.killed = true
+        }, animationSpeed);
+    }, options?.lifetime ?? core.lifeTime);
+}
