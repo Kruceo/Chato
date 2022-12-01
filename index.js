@@ -1,12 +1,13 @@
-const width =         "fit-content"
-const height =        "fit-content"
-const lifeTime =      5000             
-const padding =       10+'px'           
-const notifications = []            
-const animationSpeed = 500            
-const maxStack =        8           
-const stack =         [0,0,0,0]       
-const pos = 'right'   
+const width =            "fit-content"   
+const height =           "fit-content"
+const lifeTime =         5000             
+const padding =          10  
+const margin =           10             
+const notifications =    []            
+const animationSpeed =   500            
+const maxStack =         100               
+const stack =            [0]        
+const pos =              'right'         
 function createNotificationCore()
 {
     let core = {
@@ -15,14 +16,15 @@ function createNotificationCore()
         height,
         lifeTime,
         padding,
-        notifications,
+        margin,
+        notifications:[],
         animationSpeed,
         maxStack,
-        stack,
+        stack:[],
         spawnMessage: (title,message,options)=>spawnMessage(title,message,options,core),
         thread: null    ,
     }
-    for (let i = 0; i < core.maxStack; i++) {
+    for (let i = 0; i <= core.maxStack; i++) {
         core.stack[i] = 0
         
     }
@@ -41,13 +43,14 @@ function createNotificationCore()
                         core.stack[each.stackPos] = 0
                         each.stackPos = freeCandidate
                         core.stack[freeCandidate] = 1
-                        each.el.style.top = (window.visualViewport.height - each.el.offsetHeight * freeCandidate) + 'px'
-                    }
+                        each.el.style.top = (window.visualViewport.height - (each.el.offsetHeight+core.margin) * freeCandidate) + 'px'
+                        }
                     break
                 }
             }
             return
         })
+        
     }, 13);
 
     core.thread = thread
@@ -60,7 +63,7 @@ function spawnMessage(title, message,options,core) {
 
     if(!options)options = {}
     popupBody.setAttribute('class',options.class??('notification '+(core.notifications.length+1)))
-    popupBody.style.backgroundColor = options?.bg??"#fff"
+    popupBody.style.backgroundColor = options?.bg??"#ffffff99"
     popupBody.style.position = "fixed"
 
     let titleEl = document.createElement('h2')
@@ -72,7 +75,7 @@ function spawnMessage(title, message,options,core) {
     popupBody.appendChild(messageEl)
     popupBody.style.opacity = 0
     popupBody.style.transition = "all "+core.animationSpeed+"ms"
-    popupBody.style.padding = core.padding
+    popupBody.style.padding = core.padding + 'px'
     obj.el = popupBody
     core.notifications.push(obj)
     document.body.appendChild(popupBody)
@@ -80,7 +83,11 @@ function spawnMessage(title, message,options,core) {
     setTimeout(() => {
         popupBody.style.opacity = 1
     }, 1);
-    popupBody.style.left = (window.visualViewport.width - popupBody.offsetWidth) + 'px'
+    if(core.pos == 'right')popupBody.style.left = (window.visualViewport.width - popupBody.offsetWidth) + 'px'
+    if(core.pos == 'left')popupBody.style.left = 0
+    if(typeof(core.pos)=="number")popupBody.style.left = core.pos + 'px'
+    //if(=="number")popupBody.style.left = core.pos + 'px'
+    
     popupBody.style.top = -200 + 'px'
     setTimeout(() => {
         popupBody.style.opacity = 0
